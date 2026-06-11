@@ -69,7 +69,7 @@ HashCrack_Pro_Web/
 
 ### Step 1 — Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/hashcrack-pro.git
+git clone https://github.com/syuvasri26/hashcrack_web.git
 cd hashcrack-pro
 ```
 
