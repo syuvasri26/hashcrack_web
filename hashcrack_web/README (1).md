@@ -184,14 +184,6 @@ This tool is built **strictly for educational purposes** as part of a cybersecur
 
 ---
 
-## 👤 Author
-
-**[Your Name]**
-Red Team Cybersecurity Intern
-[Your GitHub Profile](https://github.com/YOUR_USERNAME)
-
----
-
 ## 📄 License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
