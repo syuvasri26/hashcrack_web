@@ -1,4 +1,4 @@
-# 🔴 HashCrack Pro v2.0
+# 🔴 HashCrack_web
 
 > A real-time web-based password hash cracking tool built with Python Flask — developed as a Red Team Internship Project.
 
