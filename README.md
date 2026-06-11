@@ -70,7 +70,7 @@ HashCrack_Pro_Web/
 ### Step 1 — Clone the Repository
 ```bash
 git clone https://github.com/syuvasri26/hashcrack_web.git
-cd hashcrack-pro
+cd hashcrack_web
 ```
 
 ### Step 2 — Install Dependencies
