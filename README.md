@@ -1,4 +1,4 @@
-# 🔴 HashCrack Pro v2.0
+# 🔴 HashCrack Web
 
 > A real-time web-based password hash cracking tool built with Python Flask — developed as a Red Team Internship Project.
 
@@ -11,7 +11,7 @@
 
 ## 📌 About the Project
 
-**HashCrack Pro** is a full-stack web application for password hash cracking, built using Python Flask (backend) and HTML/CSS/JavaScript (frontend). It features a hacker-themed dark dashboard, real-time live logs, multiple attack modes, and an export system — making it a professional-grade tool for security research and learning.
+**HashCrack web** is a full-stack web application for password hash cracking, built using Python Flask (backend) and HTML/CSS/JavaScript (frontend). It features a hacker-themed dark dashboard, real-time live logs, multiple attack modes, and an export system — making it a professional-grade tool for security research and learning.
 
 This project was built as part of a **15-day Red Team Cybersecurity Internship** to demonstrate knowledge of hashing algorithms, dictionary/brute-force attacks, web development, and security concepts.
 
