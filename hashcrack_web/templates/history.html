@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block page_title %}Crack History{% endblock %}
+{% block page_sub %}All cracked passwords from this session{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-title" style="justify-content:space-between;display:flex;align-items:center;">
+    <span><span style="color:var(--red)">📋</span> All Results — {{ history|length }} total</span>
+    <div style="display:flex;gap:8px;">
+      <a href="/api/export/txt"  class="btn btn-ghost btn-sm" style="text-decoration:none;">💾 TXT</a>
+      <a href="/api/export/csv"  class="btn btn-ghost btn-sm" style="text-decoration:none;">📊 CSV</a>
+      <a href="/api/export/json" class="btn btn-ghost btn-sm" style="text-decoration:none;">🌐 JSON</a>
+      <button class="btn btn-ghost btn-sm" style="color:var(--red);" onclick="clearHistory()">🗑 Clear</button>
+    </div>
+  </div>
+
+  {% if history %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Password</th>
+          <th>Hash</th>
+          <th>Algorithm</th>
+          <th>Method</th>
+          <th>Time Taken</th>
+          <th>Tries</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in history %}
+        <tr>
+          <td style="color:var(--sub);font-size:12px;">{{ loop.index }}</td>
+          <td class="td-pass">{{ r.password }}</td>
+          <td class="td-hash" title="{{ r.hash }}">{{ r.hash[:24] }}...</td>
+          <td><span class="badge badge-blue">{{ r.algo }}</span></td>
+          <td>
+            {% if r.method == "Wordlist" %}
+              <span class="badge badge-warn">{{ r.method }}</span>
+            {% elif r.method == "Brute Force" %}
+              <span class="badge badge-red">{{ r.method }}</span>
+            {% else %}
+              <span class="badge badge-green">{{ r.method }}</span>
+            {% endif %}
+          </td>
+          <td style="font-family:var(--mono);font-size:12px;color:var(--sub);">{{ r.time }}</td>
+          <td style="font-family:var(--mono);font-size:12px;color:var(--sub);">{{ r.tries }}</td>
+          <td style="font-size:12px;color:var(--sub);">{{ r.timestamp }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:50px;color:var(--sub);">
+    <div style="font-size:48px;margin-bottom:16px;">🔍</div>
+    <div style="font-size:16px;margin-bottom:8px;">No cracked passwords yet</div>
+    <div style="font-size:13px;margin-bottom:20px;">Start a cracking attack to see results here</div>
+    <a href="/crack" class="btn btn-red" style="text-decoration:none;">⚡ Go to Crack</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function clearHistory() {
+  if (!confirm("Clear all history?")) return;
+  await fetch("/api/history/clear", {method:"POST"});
+  location.reload();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Hash Generator{% endblock %}
+{% block page_title %}Hash Generator{% endblock %}
+{% block page_sub %}Generate hashes to test your cracking attacks{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title"><span>⚙️</span> Generate Hashes</div>
+    <div class="form-group">
+      <label class="form-label">Plain Text / Password</label>
+      <input class="form-input" id="gen-input" placeholder="e.g. password123" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Select Algorithms</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">
+        {% for algo in ["md5","sha1","sha224","sha256","sha384","sha512"] %}
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+          <input type="checkbox" name="algo" value="{{ algo }}" checked style="accent-color:var(--red);"> {{ algo.upper() }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+      <button class="btn btn-red" onclick="generateHashes()">⚡ Generate</button>
+      <button class="btn btn-ghost" onclick="clearResults()">🗑 Clear</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>📊</span> Results</div>
+    <div id="gen-results" style="font-family:var(--mono);font-size:12px;min-height:80px;color:var(--sub);">
+      Results will appear here...
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-teal btn-sm" onclick="copyToMulti()">📋 Copy to Multi-Hash</button>
+      <button class="btn btn-ghost btn-sm" onclick="copyAll()">📄 Copy All</button>
+    </div>
+  </div>
+</div>
+
+<!-- Batch generator -->
+<div class="card">
+  <div class="card-title"><span>📦</span> Batch Hash Generator</div>
+  <div class="grid-2">
+    <div>
+      <div class="form-group">
+        <label class="form-label">Multiple Words (one per line)</label>
+        <textarea class="form-textarea" id="batch-input" placeholder="password123&#10;admin&#10;letmein&#10;hello&#10;qwerty"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Algorithm</label>
+        <select class="form-select" id="batch-algo">
+          <option value="md5">MD5</option>
+          <option value="sha1">SHA1</option>
+          <option value="sha256">SHA256</option>
+          <option value="sha512">SHA512</option>
+        </select>
+      </div>
+      <button class="btn btn-red" onclick="batchGenerate()">⚡ Batch Generate</button>
+    </div>
+    <div>
+      <label class="form-label">Batch Results</label>
+      <div class="log-box" id="batch-results" style="height:200px;"></div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="copyBatchToMulti()">📋 Send to Multi-Hash</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let lastGenHashes = [];
+let lastBatchHashes = [];
+
+async function generateHashes() {
+  const text = document.getElementById("gen-input").value.trim();
+  if (!text) return alert("Enter text to hash.");
+  const checkboxes = document.querySelectorAll('input[name="algo"]:checked');
+  const algos = [...checkboxes].map(c => c.value);
+  if (!algos.length) return alert("Select at least one algorithm.");
+
+  const res = await fetch("/api/generate", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({text, algos})
+  });
+  const data = await res.json();
+  if (data.error) return alert(data.error);
+
+  lastGenHashes = Object.values(data.hashes);
+  const container = document.getElementById("gen-results");
+  container.innerHTML = `<div style="color:var(--sub);margin-bottom:12px;">Input: <span style="color:var(--green);">${data.input}</span></div>` +
+    Object.entries(data.hashes).map(([algo, hash]) =>
+      `<div style="margin-bottom:10px;padding:10px;background:var(--panel);border-radius:6px;">
+        <div style="color:var(--sub);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">${algo}</div>
+        <div style="color:var(--blue);word-break:break-all;cursor:pointer;" onclick="navigator.clipboard.writeText('${hash}')" title="Click to copy">${hash}</div>
+      </div>`
+    ).join("");
+}
+
+function clearResults() {
+  document.getElementById("gen-results").innerHTML = "Results will appear here...";
+  document.getElementById("gen-input").value = "";
+  lastGenHashes = [];
+}
+
+function copyAll() {
+  const text = document.getElementById("gen-results").innerText;
+  navigator.clipboard.writeText(text);
+  alert("Copied to clipboard!");
+}
+
+function copyToMulti() {
+  if (!lastGenHashes.length) return alert("Generate hashes first.");
+  localStorage.setItem("multiHashes", lastGenHashes.join("\n"));
+  window.location.href = "/crack";
+}
+
+async function batchGenerate() {
+  const lines = document.getElementById("batch-input").value.split("\n").filter(l=>l.trim());
+  const algo  = document.getElementById("batch-algo").value;
+  if (!lines.length) return alert("Enter words to hash.");
+
+  const box = document.getElementById("batch-results");
+  box.innerHTML = "";
+  lastBatchHashes = [];
+
+  for (const word of lines) {
+    const res = await fetch("/api/generate", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({text: word.trim(), algos: [algo]})
+    });
+    const data = await res.json();
+    if (data.hashes && data.hashes[algo]) {
+      const hash = data.hashes[algo];
+      lastBatchHashes.push(hash);
+      const line = document.createElement("div");
+      line.className = "l-info";
+      line.textContent = `${word.trim().padEnd(16)} → ${hash}`;
+      box.appendChild(line);
+      box.scrollTop = box.scrollHeight;
+    }
+  }
+}
+
+function copyBatchToMulti() {
+  if (!lastBatchHashes.length) return alert("Generate batch hashes first.");
+  localStorage.setItem("multiHashes", lastBatchHashes.join("\n"));
+  window.location.href = "/crack";
+}
+</script>
+{% endblock %}

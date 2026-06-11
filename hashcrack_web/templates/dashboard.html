@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_sub %}Overview of all cracking activity{% endblock %}
+
+{% block content %}
+<!-- Stat Cards -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total Cracked</div>
+    <div class="stat-value">{{ stats.total_cracked }}</div>
+    <div class="stat-sub">All time results</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Wordlist Attacks</div>
+    <div class="stat-value" style="color:var(--blue)">{{ stats.wordlist_attacks }}</div>
+    <div class="stat-sub">Dictionary method</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Brute Force</div>
+    <div class="stat-value" style="color:var(--yellow)">{{ stats.brute_attacks }}</div>
+    <div class="stat-sub">Combination method</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Multi-Hash</div>
+    <div class="stat-value" style="color:var(--teal)">{{ stats.multi_attacks }}</div>
+    <div class="stat-sub">Batch cracking</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Recent Results -->
+  <div class="card">
+    <div class="card-title"><span>📋</span> Recent Cracked Passwords</div>
+    {% if stats.recent %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Password</th><th>Algorithm</th><th>Method</th><th>Time</th></tr>
+        </thead>
+        <tbody>
+          {% for r in stats.recent %}
+          <tr>
+            <td class="td-pass">{{ r.password }}</td>
+            <td><span class="badge badge-blue">{{ r.algo }}</span></td>
+            <td><span class="badge badge-warn">{{ r.method }}</span></td>
+            <td style="font-family:var(--mono);font-size:12px;color:var(--sub)">{{ r.time }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:30px;color:var(--sub);font-size:13px;">
+      No results yet. Start cracking! →
+      <a href="/crack" style="color:var(--red)">Go to Crack</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Quick Actions -->
+  <div>
+    <div class="card">
+      <div class="card-title"><span>⚡</span> Quick Start</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <a href="/crack" class="btn btn-red" style="text-decoration:none;justify-content:center;">
+          ⚡ Start Cracking
+        </a>
+        <a href="/generator" class="btn btn-teal" style="text-decoration:none;justify-content:center;">
+          ⚙️ Hash Generator
+        </a>
+        <a href="/history" class="btn btn-ghost" style="text-decoration:none;justify-content:center;">
+          📋 View Full History
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>💾</span> Export Reports</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="/api/export/txt"  class="btn btn-ghost btn-sm" style="text-decoration:none;">💾 TXT</a>
+        <a href="/api/export/csv"  class="btn btn-ghost btn-sm" style="text-decoration:none;">📊 CSV</a>
+        <a href="/api/export/json" class="btn btn-ghost btn-sm" style="text-decoration:none;">🌐 JSON</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>🛡️</span> Supported Hash Types</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">
+        {% for t in ["MD5","SHA1","SHA224","SHA256","SHA384","SHA512"] %}
+        <span class="badge badge-red">{{ t }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

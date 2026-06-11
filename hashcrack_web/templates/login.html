@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HashCrack Pro — Login</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+    :root {
+      --bg:#080b10; --panel:#0f1318; --card:#131820; --border:#1c2333;
+      --red:#e63946; --teal:#2ec4b6; --text:#c9d1d9; --sub:#586476;
+      --mono:'Share Tech Mono',monospace; --sans:'Rajdhani',sans-serif;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bg-grid {
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: .35;
+      pointer-events: none;
+    }
+    .scan-line {
+      position: fixed; inset: 0; pointer-events: none;
+      background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px);
+    }
+    .login-wrap {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 400px;
+      padding: 20px;
+    }
+    .login-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .login-logo .title {
+      font-family: var(--mono);
+      font-size: 28px;
+      color: var(--red);
+    }
+    .login-logo .sub {
+      font-size: 13px; color: var(--sub); margin-top: 6px;
+    }
+    .login-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+    }
+    .login-box h2 {
+      font-size: 18px; font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .login-box p {
+      font-size: 13px; color: var(--sub); margin-bottom: 24px;
+    }
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: block;
+      font-size: 11px; color: var(--sub);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--mono); font-size: 13px;
+      padding: 11px 14px; border-radius: 6px;
+      outline: none; transition: border-color .2s;
+    }
+    .form-input:focus { border-color: var(--red); }
+    .btn-login {
+      width: 100%;
+      background: var(--red); color: #fff;
+      border: none; border-radius: 6px;
+      padding: 12px;
+      font-family: var(--sans); font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-login:hover { background: #c1121f; }
+    .error-msg {
+      background: rgba(230,57,70,.1);
+      border: 1px solid rgba(230,57,70,.3);
+      color: var(--red);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 12px; color: var(--sub);
+    }
+    .creds {
+      margin-top: 24px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: var(--mono); font-size: 12px;
+    }
+    .creds-title { color: var(--sub); margin-bottom: 8px; font-size: 11px; text-transform: uppercase; letter-spacing:1px; }
+    .creds-row { display: flex; justify-content: space-between; padding: 3px 0; }
+    .creds-key { color: var(--sub); }
+    .creds-val { color: var(--teal); }
+  </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="scan-line"></div>
+
+<div class="login-wrap">
+  <div class="login-logo">
+    <div class="title">🔐 HashCrack Pro</div>
+    <div class="sub">Red Team Password Cracking Suite v2.0</div>
+  </div>
+
+  <div class="login-box">
+    <h2>Sign In</h2>
+    <p>Enter your credentials to access the dashboard</p>
+
+    {% if error %}
+    <div class="error-msg">⚠ {{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" type="text" name="username" placeholder="Enter username" autocomplete="off" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" name="password" placeholder="Enter password" required>
+      </div>
+      <button class="btn-login" type="submit">⚡ LOGIN</button>
+    </form>
+
+    <div class="creds">
+      <div class="creds-title">Demo Credentials</div>
+      <div class="creds-row"><span class="creds-key">admin</span><span class="creds-val">admin123</span></div>
+      <div class="creds-row"><span class="creds-key">redteam</span><span class="creds-val">crack123</span></div>
+    </div>
+  </div>
+
+  <div class="login-footer">⚠ For educational and ethical use only</div>
+</div>
+</body>
+</html>

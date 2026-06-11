@@ -1,0 +1,466 @@
+{% extends "base.html" %}
+{% block title %}Crack Hashes{% endblock %}
+{% block page_title %}Crack Hashes{% endblock %}
+{% block page_sub %}Wordlist · Brute Force · Multi-Hash{% endblock %}
+
+{% block content %}
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('wordlist',this)">📖 Wordlist Attack</button>
+  <button class="tab-btn"        onclick="switchTab('brute',this)">💥 Brute Force</button>
+  <button class="tab-btn"        onclick="switchTab('multi',this)">📋 Multi-Hash</button>
+</div>
+
+<!-- ═══════════════ TAB 1: WORDLIST ═══════════════ -->
+<div class="tab-pane active" id="tab-wordlist">
+  <div class="grid-2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>🎯</span> Target Hash</div>
+        <div class="form-group">
+          <label class="form-label">Hash Value</label>
+          <div style="display:flex;gap:8px;">
+            <input class="form-input" id="wl-hash" placeholder="Paste hash here..." autocomplete="off">
+            <button class="btn btn-ghost btn-sm" onclick="detectHash('wl-hash','wl-detect-lbl','wl-algo')">🔍 Detect</button>
+          </div>
+          <div id="wl-detect-lbl" style="font-size:12px;margin-top:6px;color:var(--teal);font-family:var(--mono)"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Algorithm</label>
+          <select class="form-select" id="wl-algo">
+            <option value="auto">Auto Detect</option>
+            <option value="md5">MD5</option>
+            <option value="sha1">SHA1</option>
+            <option value="sha224">SHA224</option>
+            <option value="sha256">SHA256</option>
+            <option value="sha384">SHA384</option>
+            <option value="sha512">SHA512</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>📂</span> Wordlist</div>
+        <div class="form-group">
+          <label class="form-label">Paste Wordlist (one password per line)</label>
+          <textarea class="form-textarea" id="wl-words" placeholder="password123&#10;admin&#10;letmein&#10;123456&#10;..." style="height:120px;"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-teal btn-sm" onclick="loadSample('wl-words')">⚡ Load Sample</button>
+          <label class="btn btn-ghost btn-sm" style="cursor:pointer;">
+            📂 Upload File <input type="file" accept=".txt" style="display:none" onchange="loadFile(this,'wl-words')">
+          </label>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <button class="btn btn-red" id="wl-start-btn" onclick="startWordlist()">⚡ START CRACKING</button>
+        <button class="btn btn-ghost" id="wl-stop-btn" onclick="stopJob('wl')" disabled>⛔ STOP</button>
+      </div>
+    </div>
+
+    <div>
+      <!-- Live Dashboard -->
+      <div class="card">
+        <div class="card-title"><span>📊</span> Live Stats</div>
+        <div class="grid-2" style="gap:10px;margin-bottom:10px;">
+          <div style="background:var(--panel);border-radius:8px;padding:12px;">
+            <div style="font-size:11px;color:var(--sub);">SPEED</div>
+            <div style="font-family:var(--mono);font-size:22px;color:var(--red);" id="wl-speed">0 w/s</div>
+          </div>
+          <div style="background:var(--panel);border-radius:8px;padding:12px;">
+            <div style="font-size:11px;color:var(--sub);">TRIED</div>
+            <div style="font-family:var(--mono);font-size:22px;color:var(--red);" id="wl-tried">0</div>
+          </div>
+        </div>
+        <div class="progress-bar-wrap" id="wl-progress-wrap" style="display:none;">
+          <div class="progress-bar-fill" style="width:100%"></div>
+        </div>
+        <div id="wl-status" style="font-size:13px;color:var(--sub);margin-top:8px;">Status: Idle</div>
+      </div>
+
+      <!-- Result -->
+      <div class="card" id="wl-result-card" style="display:none;">
+        <div class="card-title"><span>✅</span> Password Found!</div>
+        <div style="font-family:var(--mono);font-size:24px;color:var(--green);padding:10px 0;" id="wl-result-pass"></div>
+        <div style="font-size:13px;color:var(--sub);" id="wl-result-detail"></div>
+      </div>
+
+      <!-- Log -->
+      <div class="card">
+        <div class="card-title">
+          <span>📡</span> Live Log
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="clearLog('wl-log')">Clear</button>
+        </div>
+        <div class="log-box" id="wl-log"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB 2: BRUTE FORCE ═══════════════ -->
+<div class="tab-pane" id="tab-brute">
+  <div class="grid-2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>🎯</span> Target Hash</div>
+        <div class="form-group">
+          <label class="form-label">Hash Value</label>
+          <div style="display:flex;gap:8px;">
+            <input class="form-input" id="bf-hash" placeholder="Paste hash here..." autocomplete="off">
+            <button class="btn btn-ghost btn-sm" onclick="detectHash('bf-hash','bf-detect-lbl','bf-algo')">🔍 Detect</button>
+          </div>
+          <div id="bf-detect-lbl" style="font-size:12px;margin-top:6px;color:var(--teal);font-family:var(--mono)"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Algorithm</label>
+          <select class="form-select" id="bf-algo">
+            <option value="auto">Auto Detect</option>
+            <option value="md5">MD5</option>
+            <option value="sha1">SHA1</option>
+            <option value="sha256">SHA256</option>
+            <option value="sha512">SHA512</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>⚙️</span> Brute Force Settings</div>
+        <div class="grid-2" style="gap:12px;">
+          <div class="form-group">
+            <label class="form-label">Min Length</label>
+            <input class="form-input" id="bf-min" type="number" value="1" min="1" max="8">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max Length</label>
+            <input class="form-input" id="bf-max" type="number" value="4" min="1" max="8">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Character Set</label>
+          <select class="form-select" id="bf-charset">
+            <option value="lower">Lowercase (a-z)</option>
+            <option value="digits">Digits (0-9)</option>
+            <option value="lower_digits" selected>Lowercase + Digits</option>
+            <option value="upper">Uppercase (A-Z)</option>
+            <option value="all_alpha">Lower + Upper + Digits</option>
+            <option value="printable">All Printable</option>
+          </select>
+        </div>
+        <div class="alert alert-info" style="font-size:12px;">
+          ⚠ Brute force is slow for long passwords. Max length 4–5 recommended for demo.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <button class="btn btn-red" onclick="startBrute()">💥 START BRUTE FORCE</button>
+        <button class="btn btn-ghost" id="bf-stop-btn" onclick="stopJob('bf')" disabled>⛔ STOP</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title"><span>📊</span> Live Stats</div>
+        <div class="grid-2" style="gap:10px;margin-bottom:10px;">
+          <div style="background:var(--panel);border-radius:8px;padding:12px;">
+            <div style="font-size:11px;color:var(--sub);">SPEED</div>
+            <div style="font-family:var(--mono);font-size:22px;color:var(--yellow);" id="bf-speed">0 w/s</div>
+          </div>
+          <div style="background:var(--panel);border-radius:8px;padding:12px;">
+            <div style="font-size:11px;color:var(--sub);">TRIED</div>
+            <div style="font-family:var(--mono);font-size:22px;color:var(--yellow);" id="bf-tried">0</div>
+          </div>
+        </div>
+        <div id="bf-status" style="font-size:13px;color:var(--sub);">Status: Idle</div>
+      </div>
+
+      <div class="card" id="bf-result-card" style="display:none;">
+        <div class="card-title"><span>✅</span> Password Found!</div>
+        <div style="font-family:var(--mono);font-size:24px;color:var(--green);padding:10px 0;" id="bf-result-pass"></div>
+        <div style="font-size:13px;color:var(--sub);" id="bf-result-detail"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>📡</span> Live Log
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="clearLog('bf-log')">Clear</button>
+        </div>
+        <div class="log-box" id="bf-log"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB 3: MULTI-HASH ═══════════════ -->
+<div class="tab-pane" id="tab-multi">
+  <div class="grid-2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>📋</span> Multiple Hashes (one per line)</div>
+        <textarea class="form-textarea" id="mh-hashes" style="height:160px;"
+          placeholder="# Paste hashes here, one per line&#10;482c811da5d5b4bc6d497ffa98491e38&#10;5f4dcc3b5aa765d61d8327deb882cf99&#10;..."></textarea>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>📂</span> Wordlist</div>
+        <textarea class="form-textarea" id="mh-words" style="height:100px;" placeholder="password&#10;admin&#10;letmein&#10;..."></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn btn-teal btn-sm" onclick="loadSample('mh-words')">⚡ Sample</button>
+          <label class="btn btn-ghost btn-sm" style="cursor:pointer;">
+            📂 Upload <input type="file" accept=".txt" style="display:none" onchange="loadFile(this,'mh-words')">
+          </label>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <button class="btn btn-red" onclick="startMulti()">📋 CRACK ALL HASHES</button>
+        <button class="btn btn-ghost" id="mh-stop-btn" onclick="stopJob('mh')" disabled>⛔ STOP</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title"><span>📊</span> Stats</div>
+        <div class="grid-2" style="gap:10px;">
+          <div style="background:var(--panel);border-radius:8px;padding:12px;">
+            <div style="font-size:11px;color:var(--sub);">CRACKED</div>
+            <div style="font-family:var(--mono);font-size:22px;color:var(--green);" id="mh-cracked">0</div>
+          </div>
+          <div style="background:var(--panel);border-radius:8px;padding:12px;">
+            <div style="font-size:11px;color:var(--sub);">SPEED</div>
+            <div style="font-family:var(--mono);font-size:22px;color:var(--teal);" id="mh-speed">0 w/s</div>
+          </div>
+        </div>
+        <div id="mh-status" style="font-size:13px;color:var(--sub);margin-top:10px;">Status: Idle</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>✅</span> Cracked Results</div>
+        <div id="mh-results-list" style="font-family:var(--mono);font-size:13px;min-height:40px;color:var(--sub);">
+          No results yet.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>📡</span> Live Log
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="clearLog('mh-log')">Clear</button>
+        </div>
+        <div class="log-box" id="mh-log"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const SAMPLE_WORDS = `password123\npassword\nadmin\nletmein\n123456\nqwerty\nhello\ndragon\nmaster\nmonkey\ntest123\nroot\nkali\nlinux\nhacker\nredteam`;
+
+let activeJobIds = {wl:null, bf:null, mh:null};
+
+// ── Tab switch ──
+function switchTab(id, btn) {
+  document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-"+id).classList.add("active");
+  btn.classList.add("active");
+}
+
+// ── Sample & file load ──
+function loadSample(id) { document.getElementById(id).value = SAMPLE_WORDS; }
+function loadFile(input, targetId) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { document.getElementById(targetId).value = e.target.result; };
+  reader.readAsText(file);
+}
+
+// ── Detect hash ──
+async function detectHash(hashId, labelId, algoId) {
+  const h = document.getElementById(hashId).value.trim();
+  if (!h) return;
+  const res = await fetch("/api/detect", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({hash:h})
+  });
+  const data = await res.json();
+  const lbl = document.getElementById(labelId);
+  if (data.type === "unknown") {
+    lbl.style.color = "var(--yellow)";
+    lbl.textContent = `⚠ Unknown hash length (${data.length} chars)`;
+  } else {
+    lbl.style.color = "var(--teal)";
+    lbl.textContent = `✔ Detected: ${data.type.toUpperCase()} (${data.length} chars)`;
+    document.getElementById(algoId).value = data.type;
+  }
+}
+
+// ══ WORDLIST ══
+async function startWordlist() {
+  const hash = document.getElementById("wl-hash").value.trim();
+  const algo = document.getElementById("wl-algo").value;
+  const words = document.getElementById("wl-words").value;
+  if (!hash) return alert("Enter a hash.");
+  if (!words.trim()) return alert("Add wordlist words.");
+
+  clearLog("wl-log");
+  document.getElementById("wl-result-card").style.display = "none";
+  document.getElementById("wl-start-btn").disabled = true;
+  document.getElementById("wl-stop-btn").disabled = false;
+  document.getElementById("wl-progress-wrap").style.display = "block";
+  document.getElementById("wl-status").textContent = "Status: Running...";
+  log("wl-log", `Starting wordlist attack on ${hash.slice(0,16)}...`, "info");
+
+  const res = await fetch("/api/crack/wordlist", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({hash, algo, wordlist: words})
+  });
+  const data = await res.json();
+  if (data.error) { log("wl-log", data.error, "error"); resetButtons("wl"); return; }
+
+  activeJobIds.wl = data.job_id;
+  let lastLog = 0;
+  pollJob(data.job_id, job => {
+    const s = job.stats;
+    document.getElementById("wl-speed").textContent = (s.speed||0).toLocaleString() + " w/s";
+    document.getElementById("wl-tried").textContent = (s.tries||0).toLocaleString();
+    const newLogs = job.log.slice(lastLog);
+    newLogs.forEach(l => {
+      const type = l.startsWith("✅") ? "crack" : l.startsWith("❌") ? "error" : "info";
+      log("wl-log", l, type);
+    });
+    lastLog = job.log.length;
+  }, job => {
+    document.getElementById("wl-progress-wrap").style.display = "none";
+    resetButtons("wl");
+    if (job.status === "found") {
+      const r = job.result;
+      document.getElementById("wl-result-card").style.display = "block";
+      document.getElementById("wl-result-pass").textContent = r.password;
+      document.getElementById("wl-result-detail").textContent =
+        `Algorithm: ${r.algo}  |  Tries: ${r.tries.toLocaleString()}  |  Time: ${r.time}`;
+      document.getElementById("wl-status").textContent = "✅ Password cracked!";
+    } else {
+      document.getElementById("wl-status").textContent = "❌ Not found — try a larger wordlist";
+    }
+  });
+}
+
+// ══ BRUTE FORCE ══
+async function startBrute() {
+  const hash    = document.getElementById("bf-hash").value.trim();
+  const algo    = document.getElementById("bf-algo").value;
+  const min_len = document.getElementById("bf-min").value;
+  const max_len = document.getElementById("bf-max").value;
+  const charset = document.getElementById("bf-charset").value;
+  if (!hash) return alert("Enter a hash.");
+
+  clearLog("bf-log");
+  document.getElementById("bf-result-card").style.display = "none";
+  document.getElementById("bf-stop-btn").disabled = false;
+  document.getElementById("bf-status").textContent = "Status: Running...";
+  log("bf-log", `Starting brute force (len ${min_len}-${max_len}, charset: ${charset})`, "info");
+
+  const res = await fetch("/api/crack/brute", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({hash, algo, min_len, max_len, charset})
+  });
+  const data = await res.json();
+  if (data.error) { log("bf-log", data.error, "error"); return; }
+
+  activeJobIds.bf = data.job_id;
+  let lastLog = 0;
+  pollJob(data.job_id, job => {
+    const s = job.stats;
+    document.getElementById("bf-speed").textContent = (s.speed||0).toLocaleString() + " w/s";
+    document.getElementById("bf-tried").textContent = (s.tries||0).toLocaleString();
+    const newLogs = job.log.slice(lastLog);
+    newLogs.forEach(l => {
+      const type = l.startsWith("✅") ? "crack" : l.startsWith("❌") ? "error" : "info";
+      log("bf-log", l, type);
+    });
+    lastLog = job.log.length;
+  }, job => {
+    resetButtons("bf");
+    if (job.status === "found") {
+      const r = job.result;
+      document.getElementById("bf-result-card").style.display = "block";
+      document.getElementById("bf-result-pass").textContent = r.password;
+      document.getElementById("bf-result-detail").textContent =
+        `Algorithm: ${r.algo}  |  Tries: ${r.tries.toLocaleString()}  |  Time: ${r.time}`;
+      document.getElementById("bf-status").textContent = "✅ Password cracked!";
+    } else {
+      document.getElementById("bf-status").textContent = "❌ Not found";
+    }
+  });
+}
+
+// ══ MULTI-HASH ══
+async function startMulti() {
+  const hashes = document.getElementById("mh-hashes").value.split("\n");
+  const words  = document.getElementById("mh-words").value;
+  if (!hashes.length) return alert("Enter at least one hash.");
+  if (!words.trim()) return alert("Add wordlist words.");
+
+  clearLog("mh-log");
+  document.getElementById("mh-results-list").textContent = "Cracking...";
+  document.getElementById("mh-stop-btn").disabled = false;
+  document.getElementById("mh-status").textContent = "Status: Running...";
+  log("mh-log", `Starting multi-hash attack on ${hashes.filter(h=>h.trim()&&!h.startsWith("#")).length} hashes`, "info");
+
+  const res = await fetch("/api/crack/multi", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({hashes, wordlist: words})
+  });
+  const data = await res.json();
+  if (data.error) { log("mh-log", data.error, "error"); return; }
+
+  activeJobIds.mh = data.job_id;
+  let lastLog = 0;
+  pollJob(data.job_id, job => {
+    const s = job.stats;
+    document.getElementById("mh-speed").textContent = (s.speed||0).toLocaleString() + " w/s";
+    document.getElementById("mh-cracked").textContent = (job.result||[]).length;
+    const newLogs = job.log.slice(lastLog);
+    newLogs.forEach(l => {
+      const type = l.startsWith("✅") ? "crack" : l.startsWith("❌") ? "error" : l.startsWith("[!]") ? "warn" : "info";
+      log("mh-log", l, type);
+    });
+    lastLog = job.log.length;
+  }, job => {
+    resetButtons("mh");
+    const results = job.result || [];
+    if (results.length) {
+      document.getElementById("mh-results-list").innerHTML = results.map(r =>
+        `<div style="margin-bottom:10px;padding:10px;background:var(--panel);border-radius:6px;border-left:3px solid var(--green);">
+          <span style="color:var(--green);font-size:16px;">${r.password}</span>
+          <span style="color:var(--sub);font-size:11px;margin-left:10px;">${r.algo} · ${r.time}</span>
+          <div style="color:var(--sub);font-size:11px;margin-top:3px;">${r.hash.slice(0,32)}...</div>
+        </div>`
+      ).join("");
+      document.getElementById("mh-status").textContent = `✅ ${results.length} password(s) cracked!`;
+    } else {
+      document.getElementById("mh-results-list").textContent = "❌ No passwords found.";
+      document.getElementById("mh-status").textContent = "❌ Not found";
+    }
+  });
+}
+
+// ── Stop & reset ──
+async function stopJob(prefix) {
+  const jobId = activeJobIds[prefix];
+  if (jobId) await fetch(`/api/job/${jobId}/stop`, {method:"POST"});
+  resetButtons(prefix);
+}
+
+function resetButtons(prefix) {
+  const startBtn = document.getElementById(prefix+"-start-btn");
+  const stopBtn  = document.getElementById(prefix+"-stop-btn");
+  if (startBtn) startBtn.disabled = false;
+  if (stopBtn)  stopBtn.disabled  = true;
+}
+</script>
+{% endblock %}
